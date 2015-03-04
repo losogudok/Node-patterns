@@ -1,0 +1,21 @@
+{
+  "name": "Node-patterns",
+  "version": "1.0.0",
+  "description": "",
+  "main": "generators.js",
+  "dependencies": {},
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/losogudok/Node-patterns.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/losogudok/Node-patterns/issues"
+  },
+  "homepage": "https://github.com/losogudok/Node-patterns"
+}

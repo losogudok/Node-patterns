@@ -1,4 +1,6 @@
-iterateSeries(collection, iteratorCallback, finalCallback) {
+ function iterateSeries(collection, iteratorCallback, finalCallback) {
+     "use strict";
+
     function iterate(index) {
         if (index === collection.length) {
             return finalCallback();

@@ -6,6 +6,7 @@ var utilities = require('./utils');
 var mkdirp = require('mkdirp');
 var prompt = require('prompt');
 var request = require('request');
+var async = require('../my_async');
 var conf = {
     prompt: {
         properties: {
@@ -45,19 +46,30 @@ function spiderLinks(currentUrl, body, nesting, callback) {
         return process.nextTick(callback);
     }
     var links = utilities.getPageLinks(currentUrl, body);
-    function iterate(index) {
-        if(index === links.length) {
-            return callback();
-        }
+    async.iterateSeries(links, processLink, callback);
 
-        spider(links[index], nesting - 1, function(err) {
-            if(err) {
-                return callback(err);
+    function processLink(link, done){
+        spider(link, nesting - 1, function(err){
+            if (err) {
+                return done(err);
             }
-            iterate(index + 1);
+            return done();
         });
     }
-    iterate(0);
+
+    //function iterate(index) {
+    //    if(index === links.length) {
+    //        return callback();
+    //    }
+    //
+    //    spider(links[index], nesting - 1, function(err) {
+    //        if(err) {
+    //            return callback(err);
+    //        }
+    //        iterate(index + 1);
+    //    });
+    //}
+    //iterate(0);
 }
 
 function saveFile(filename, contents, callback) {
