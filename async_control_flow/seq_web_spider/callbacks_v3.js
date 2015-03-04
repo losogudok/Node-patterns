@@ -2,7 +2,7 @@
 
 var fs = require('fs');
 var path = require('path');
-var utils = require('./url_utils');
+var utils = require('./utils');
 var mkdirp = require('mkdirp');
 var prompt = require('prompt');
 var request = require('request');
@@ -21,7 +21,7 @@ var conf = {
 
 prompt.start();
 
-prompt.get(conf.prompt, function (err, result) {
+prompt.get(conf.prompt, function(err, result) {
     if (err) {
         console.error(err);
     }
@@ -43,7 +43,7 @@ function spider(url, nesting, callback) {
         if (err) {
             if (err.code !== "ENOENT") {
                 return callback(err);
-            }   
+            }
             return download(url, filename, function(err){
                 if (err) {
                     return callback(err);
@@ -60,15 +60,15 @@ function spiderLinks(url, body, nesting, callback) {
     if (nesting === 0) {
         return process.nextTick(callback);
     }
-    links = getPageLinks(url, body);
+    links = utils.getPageLinks(url, body);
     function iterate(index) {
         if (index === links.length) {
             return callback();
         }
-        spider(links[index], nesting - 1, Function(err){
+        spider(links[index], nesting - 1, function(err){
             if (err) {
                 return callback(err);
-            }       
+            }
             iterate(index + 1);
         });
     }
