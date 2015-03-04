@@ -3,7 +3,12 @@
   "version": "1.0.0",
   "description": "",
   "main": "generators.js",
-  "dependencies": {},
+  "dependencies": {
+    "cheerio": "^0.18.0",
+    "mkdirp": "^0.5.0",
+    "request": "^2.53.0",
+    "slug": "^0.8.0"
+  },
   "devDependencies": {},
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
