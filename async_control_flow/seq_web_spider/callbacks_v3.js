@@ -2,7 +2,7 @@
 
 var fs = require('fs');
 var path = require('path');
-var utils = require('./utils');
+var utilities = require('./utils');
 var mkdirp = require('mkdirp');
 var prompt = require('prompt');
 var request = require('request');
@@ -13,6 +13,12 @@ var conf = {
                 pattern: /^http:\/\//,
                 description: 'Enter URL to download',
                 message: 'URL must contain protocol',
+                required: true
+            },
+            nesting: {
+                pattern: /\d*/,
+                description: 'Enter nesting number',
+                message: 'Nesting must be a number',
                 required: true
             }
         }
@@ -25,60 +31,47 @@ prompt.get(conf.prompt, function(err, result) {
     if (err) {
         console.error(err);
     }
-    spider(result.url, function(err, filename, downloaded) {
+    spider(result.url, Number(result.nesting), function(err, filename) {
         if(err) {
-            return console.log(err);
+            console.log(err);
+        } else {
+            console.log('Download complete');
         }
-        else if(downloaded){
-            return console.log('Completed the download of "'+ filename +'"');
-        }
-        console.log('"'+ filename +'" was already downloaded');
     });
 });
 
-function spider(url, nesting, callback) {
-    var filename = utils.urlToFilename(url);
-
-    fs.readFile(filename, 'utf-8', function (err, body) {
-        if (err) {
-            if (err.code !== "ENOENT") {
-                return callback(err);
-            }
-            return download(url, filename, function(err){
-                if (err) {
-                    return callback(err);
-                }
-                spiderLinks(url, body, nesting, callback);
-            });
-        }
-        spiderLinks(url, body, nesting, callback);
-    });
-}
-
-function spiderLinks(url, body, nesting, callback) {
-    var links;
-    if (nesting === 0) {
+function spiderLinks(currentUrl, body, nesting, callback) {
+    if(nesting === 0) {
         return process.nextTick(callback);
     }
-    links = utils.getPageLinks(url, body);
+    var links = utilities.getPageLinks(currentUrl, body);
     function iterate(index) {
-        if (index === links.length) {
+        if(index === links.length) {
             return callback();
         }
-        spider(links[index], nesting - 1, function(err){
-            if (err) {
+
+        spider(links[index], nesting - 1, function(err) {
+            if(err) {
                 return callback(err);
             }
             iterate(index + 1);
         });
     }
+    iterate(0);
 }
 
-
+function saveFile(filename, contents, callback) {
+    mkdirp(path.dirname(filename), function(err) {
+        if(err) {
+            return callback(err);
+        }
+        fs.writeFile(filename, contents, callback);
+    });
+}
 
 function download(url, filename, callback) {
     console.log('Downloading ' + url);
-    request(url, function(err, res, body) {
+    request(url, function(err, response, body) {
         if(err) {
             return callback(err);
         }
@@ -87,17 +80,27 @@ function download(url, filename, callback) {
             if(err) {
                 return callback(err);
             }
-            callback(null);
+            callback(null, body);
         });
     });
 }
 
-
-function saveFile(filename, contents, callback) {
-    mkdirp(path.dirname(filename), function(err) {
+function spider(url, nesting, callback) {
+    var filename = utilities.urlToFilename(url);
+    fs.readFile(filename, 'utf8', function(err, body) {
         if(err) {
-            return callback(err);
+            if(err.code !== 'ENOENT') {
+                return callback(err);
+            }
+
+            return download(url, filename, function(err, body) {
+                if(err) {
+                    return callback(err);
+                }
+                spiderLinks(url, body, nesting, callback);
+            });
         }
-        fs.writeFile(filename, contents, callback);
+
+        spiderLinks(url, body, nesting, callback);
     });
 }
