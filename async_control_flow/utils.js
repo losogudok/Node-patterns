@@ -28,8 +28,7 @@ module.exports.getLinkUrl = function getLinkUrl(currentUrl, element) {
   var link = urlResolve(currentUrl, element.attribs.href || "");
   var parsedLink = urlParse(link);
   var currentParsedUrl = urlParse(currentUrl);
-  if(parsedLink.hostname !== currentParsedUrl.hostname
-    || !parsedLink.pathname) {
+  if(parsedLink.hostname !== currentParsedUrl.hostname || !parsedLink.pathname) {
       return null;
   }
   return link;

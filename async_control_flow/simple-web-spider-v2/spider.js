@@ -2,7 +2,7 @@
 
 var fs = require('fs');
 var path = require('path');
-var utils = require('./url_utils');
+var utils = require('../utils');
 var mkdirp = require('mkdirp');
 var prompt = require('prompt');
 var request = require('request');

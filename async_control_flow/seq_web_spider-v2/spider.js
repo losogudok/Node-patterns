@@ -2,7 +2,7 @@
 
 var fs = require('fs');
 var path = require('path');
-var utilities = require('./utils');
+var utilities = require('../utils');
 var mkdirp = require('mkdirp');
 var prompt = require('prompt');
 var request = require('request');
@@ -45,25 +45,12 @@ function spiderLinks(currentUrl, body, nesting, callback) {
     if(nesting === 0) {
         return process.nextTick(callback);
     }
-    var links = utils.getPageLinks(currentUrl, body);
-    if(links.length === 0) {
-        return process.nextTick(callback);
-    }
-    var completed = 0, 
-        errored = false;
+    var links = utilities.getPageLinks(currentUrl, body);
+    async.iterateSeries(links, processLink, callback);
 
-    function done(err) {
-        if(err) {
-            errored = true;
-            return callback(err);
-        }
-        if(++completed === links.length && !errored) {
-            return callback();
-        }
-    }
-    links.forEach(function(link) {
+    function processLink(link, done) {
         spider(link, nesting - 1, done);
-    });
+    }
 }
 
 function saveFile(filename, contents, callback) {
