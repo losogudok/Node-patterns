@@ -4,6 +4,7 @@
   "description": "",
   "main": "generators.js",
   "dependencies": {
+    "async": "^0.9.0",
     "cheerio": "^0.18.0",
     "mkdirp": "^0.5.0",
     "request": "^2.53.0",
