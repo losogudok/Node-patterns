@@ -2,11 +2,10 @@
 
 var fs = require('fs');
 var path = require('path');
-var utilities = require('./utils');
+var utilities = require('../utils');
 var mkdirp = require('mkdirp');
 var prompt = require('prompt');
 var request = require('request');
-var async = require('../my_async');
 var conf = {
     prompt: {
         properties: {
@@ -46,16 +45,19 @@ function spiderLinks(currentUrl, body, nesting, callback) {
         return process.nextTick(callback);
     }
     var links = utilities.getPageLinks(currentUrl, body);
-    async.iterateSeries(links, processLink, callback);
+    function iterate(index) {
+        if(index === links.length) {
+            return callback();
+        }
 
-    function processLink(link, done) {
-        spider(link, nesting - 1, function(err){
-            if (err) {
-                return done(err);
+        spider(links[index], nesting - 1, function(err) {
+            if(err) {
+                return callback(err);
             }
-            return done();
+            iterate(index + 1);
         });
     }
+    iterate(0);
 }
 
 function saveFile(filename, contents, callback) {

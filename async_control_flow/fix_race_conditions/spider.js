@@ -2,10 +2,11 @@
 
 var fs = require('fs');
 var path = require('path');
-var utilities = require('./utils');
+var utils = require('../utils');
 var mkdirp = require('mkdirp');
 var prompt = require('prompt');
 var request = require('request');
+var async = require('../my_async');
 var conf = {
     prompt: {
         properties: {
@@ -44,20 +45,25 @@ function spiderLinks(currentUrl, body, nesting, callback) {
     if(nesting === 0) {
         return process.nextTick(callback);
     }
-    var links = utilities.getPageLinks(currentUrl, body);
-    function iterate(index) {
-        if(index === links.length) {
+    var links = utils.getPageLinks(currentUrl, body);
+    if(links.length === 0) {
+        return process.nextTick(callback);
+    }
+    var completed = 0, 
+        errored = false;
+
+    function done(err) {
+        if(err) {
+            errored = true;
+            return callback(err);
+        }
+        if(++completed === links.length && !errored) {
             return callback();
         }
-
-        spider(links[index], nesting - 1, function(err) {
-            if(err) {
-                return callback(err);
-            }
-            iterate(index + 1);
-        });
     }
-    iterate(0);
+    links.forEach(function(link) {
+        spider(link, nesting - 1, done);
+    });
 }
 
 function saveFile(filename, contents, callback) {
@@ -86,7 +92,7 @@ function download(url, filename, callback) {
 }
 
 function spider(url, nesting, callback) {
-    var filename = utilities.urlToFilename(url);
+    var filename = utils.urlToFilename(url);
     fs.readFile(filename, 'utf8', function(err, body) {
         if(err) {
             if(err.code !== 'ENOENT') {

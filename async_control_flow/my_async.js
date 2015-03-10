@@ -16,22 +16,24 @@
 }
 
 function iterateParallel(collection, iterator, final) {
-  var completed = 0;
+  var completed = 0,
+      globalErr = false;
 
   function done(err) {
       if (err) {
+          globalErr = true;
           return final(err);
       }
       else {
         completed++;
-        if (completed === collection.length) {
+        if (completed === collection.length && !globalErr) {
           final();
         }
       }
   }
 
   collection.forEach(function(item){
-      iterator(item, done)
+      iterator(item, done);
   });
 }
 
