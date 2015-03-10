@@ -35,6 +35,31 @@ function iterateParallel(collection, iterator, final) {
   });
 }
 
+function TaskQueue(concurrency) {
+  this.concurrency = concurrency;
+  this.running = 0;
+  this.queue = [];
+}
+
+TaskQueue.prototype = {
+  pushTask: function(task) {
+    this.queue.push(task);
+    this.next();  
+  },
+  next: function() {
+    var self = this;
+    while(self.running < self.concurrency && self.queue.length) {
+      var task = self.queue.shift();
+      task(function(err) {
+        self.running--;
+        self.next();
+      });
+      self.running++;
+    }
+  }
+};
+
 
 module.exports.iterateSeries = iterateSeries;
 module.exports.iterateParallel = iterateParallel;
+module.exports.TaskQueue = TaskQueue;
