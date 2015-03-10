@@ -1,5 +1,6 @@
- function iterateSeries(collection, iteratorCallback, finalCallback) {
-     "use strict";
+"use strict";
+
+function iterateSeries(collection, iteratorCallback, finalCallback) {
 
     function iterate(index) {
         if (index === collection.length) {
@@ -38,9 +39,9 @@ function iterateParallel(collection, iterator, final) {
 }
 
 function TaskQueue(concurrency) {
-  this.concurrency = concurrency;
-  this.running = 0;
-  this.queue = [];
+    this.concurrency = concurrency;
+    this.running = 0;
+    this.queue = [];
 }
 
 TaskQueue.prototype = {
@@ -61,7 +62,47 @@ TaskQueue.prototype = {
   }
 };
 
+function PromiseTaskQueue(concurrency) {
+    this.concurrency = concurrency;
+    this.running = 0;
+    this.queue = [];
+}
 
+PromiseTaskQueue.prototype.next = function() {
+    var self = this;
+    while(self.running < self.concurrency && self.queue.length) {
+        var task = self.queue.shift();
+        task().then(function() {
+            self.running--;
+            self.next();
+        });
+        self.running++;
+    }
+};
+
+//  var tasks = [...]
+//  var promise = Promise.resolve();
+//  tasks.forEach(function(task) {
+//      promise = promise.then(function() {
+//          return task();
+//      });
+//  });
+//  promise.then(function() {
+////    All tasks completed
+//  });
+
+function seqPromise(collection, iterator) {
+    var promise = Promise.resolve();
+    collection.forEach(function(item) {
+        promise = promise.then(function() {
+            return iterator(item);
+        });
+    });
+    return promise;
+}
+
+module.exports.seqPromise  = seqPromise;
 module.exports.iterateSeries = iterateSeries;
 module.exports.iterateParallel = iterateParallel;
 module.exports.TaskQueue = TaskQueue;
+module.exports.PromiseTaskQueue = PromiseTaskQueue;

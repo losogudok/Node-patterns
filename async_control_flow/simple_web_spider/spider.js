@@ -20,7 +20,8 @@ prompt.get({
     }
 }, function (err, result) {
     if (err) {
-        return onErr(err);
+        console.log(err);
+        return 1;
     }
     spider(result.url, function(err, filename, downloaded) {
         if(err) {
@@ -34,14 +35,6 @@ prompt.get({
         }
     });
 });
-
-function onErr(err) {
-    console.log(err);
-    return 1;
-}
-
-
-
 
 function spider(dlurl, callback) {
     var filename = utils.urlToFilename(dlurl);

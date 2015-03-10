@@ -7,7 +7,6 @@ var mkdirp = require('mkdirp');
 var prompt = require('prompt');
 var request = require('request');
 var async = require('../my_async');
-var spiderings = {};
 var conf = {
     prompt: {
         properties: {
@@ -93,10 +92,6 @@ function download(url, filename, callback) {
 }
 
 function spider(url, nesting, callback) {
-    if (spiderings[url]) {
-        return process.nextTick(callback);
-    }
-    spiderings[url] = true;
     var filename = utils.urlToFilename(url);
     fs.readFile(filename, 'utf8', function(err, body) {
         if(err) {
